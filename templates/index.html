@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hãng vận tải hành khách đường dài</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Hãng vận tải hành khách đường dài</h1>
+    </header>
+
+    {% if messages %}
+      <div class="flash-box">
+        {% for msg in messages %}
+          <div class="flash-message">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <main class="container">
+      <section class="stats">
+        <div class="card stat">
+          <span class="label">Xe</span>
+          <strong>{{ counts["Xe"] }}</strong>
+        </div>
+        <div class="card stat">
+          <span class="label">Tài xế</span>
+          <strong>{{ counts["TaiXe"] }}</strong>
+        </div>
+        <div class="card stat">
+          <span class="label">Tuyến</span>
+          <strong>{{ counts["Tuyen"] }}</strong>
+        </div>
+        <div class="card stat">
+          <span class="label">Chuyến</span>
+          <strong>{{ counts["Chuyen"] }}</strong>
+        </div>
+        <div class="card stat">
+          <span class="label">Hệ số</span>
+          <strong>{{ counts["HeSo"] }}</strong>
+        </div>
+        <div class="card stat accent">
+          <span class="label">Doanh thu</span>
+          <strong>{{ "{:,}".format(total_revenue) }} VND</strong>
+        </div>
+        <div class="card stat warn">
+          <span class="label">Xe quá hạn</span>
+          <strong>{{ overdue_count }}</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Ràng buộc dữ liệu</h2>
+        <ul class="rule-list">
+          <li>Số khách của mỗi chuyến phải nhỏ hơn hoặc bằng số ghế trừ 2.</li>
+          <li>Mỗi chuyến phải có một lái xe và một phụ xe khác nhau.</li>
+          <li>Biển số, CMT và mã số bằng lái là duy nhất.</li>
+          <li>Độ phức tạp tuyến chỉ chấp nhận giá trị 1, 2 hoặc 3.</li>
+        </ul>
+      </section>
+
+      <section class="two-col">
+        <div class="card">
+          <h2>Thêm xe</h2>
+          <form method="post" action="/">
+            <input type="hidden" name="route" value="bus">
+            <div class="field"><label>Biển số</label><input type="text" name="bien_so" required></div>
+            <div class="field"><label>Màu xe</label><input type="text" name="mau_xe"></div>
+            <div class="field"><label>Hãng sản xuất</label><input type="text" name="hang_san_xuat"></div>
+            <div class="field"><label>Đời xe</label><input type="number" name="doi_xe"></div>
+            <div class="field"><label>Model</label><input type="text" name="model"></div>
+            <div class="field"><label>Số ghế</label><input type="number" name="so_ghe" required></div>
+            <div class="field"><label>Số năm sử dụng</label><input type="number" name="so_nam_su_dung"></div>
+            <div class="field"><label>Ngày bảo dưỡng cuối</label><input type="date" name="ngay_bao_duong"></div>
+            <button type="submit">Lưu xe</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Thêm tài xế</h2>
+          <form method="post" action="/">
+            <input type="hidden" name="route" value="driver">
+            <div class="field"><label>Họ tên</label><input type="text" name="ten" required></div>
+            <div class="field"><label>CMT</label><input type="text" name="cmt" required></div>
+            <div class="field"><label>Mã bằng lái</label><input type="text" name="bang_lai" required></div>
+            <div class="field"><label>Loại bằng lái</label><input type="text" name="loai_bang_lai"></div>
+            <div class="field"><label>Địa chỉ</label><input type="text" name="dia_chi"></div>
+            <div class="field"><label>Ngày sinh</label><input type="date" name="ngay_sinh"></div>
+            <div class="field"><label>Thâm niên</label><input type="number" name="tham_nien"></div>
+            <button type="submit">Lưu tài xế</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="two-col">
+        <div class="card">
+          <h2>Thêm tuyến</h2>
+          <form method="post" action="/">
+            <input type="hidden" name="route" value="route">
+            <div class="field"><label>Điểm đầu</label><input type="text" name="diem_dau" required></div>
+            <div class="field"><label>Điểm cuối</label><input type="text" name="diem_cuoi" required></div>
+            <div class="field"><label>Độ dài (km)</label><input type="number" step="0.1" name="do_dai" required></div>
+            <div class="field"><label>Độ phức tạp</label>
+              <select name="do_phuc_tap">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <button type="submit">Lưu tuyến</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Thêm chuyến</h2>
+          <form method="post" action="/">
+            <input type="hidden" name="route" value="trip">
+            <div class="field"><label>Tuyến</label>
+              <select name="ma_tuyen" required>
+                {% for item in routes %}
+                  <option value="{{ item.MaTuyen }}">{{ item.DiemDau }} - {{ item.DiemCuoi }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field"><label>Xe</label>
+              <select name="ma_xe" required>
+                {% for item in buses %}
+                  <option value="{{ item.MaXe }}">{{ item.BienSo }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field"><label>Lái xe</label>
+              <select name="ma_lai_xe" required>
+                {% for item in drivers %}
+                  <option value="{{ item.MaTX }}">{{ item.HoTen }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field"><label>Phụ xe</label>
+              <select name="ma_phu_xe" required>
+                {% for item in drivers %}
+                  <option value="{{ item.MaTX }}">{{ item.HoTen }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field"><label>Ngày khởi hành</label><input type="datetime-local" name="ngay_khoi_hanh" required></div>
+            <div class="field"><label>Số khách</label><input type="number" name="so_khach" required></div>
+            <div class="field"><label>Giá vé</label><input type="number" name="gia_ve" required></div>
+            <button type="submit">Lưu chuyến</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>1. Lương tháng của tài xế</h2>
+        <form method="get" action="/" class="date-form">
+          <div class="field"><label>Tháng</label><input type="month" name="payroll_month" value="{{ payroll_month }}"></div>
+          <button type="submit">Xem lương</button>
+        </form>
+        <table>
+          <thead>
+            <tr><th>Mã TX</th><th>Họ tên</th><th>Lương tháng</th></tr>
+          </thead>
+          <tbody>
+            {% for item in payroll %}
+              <tr>
+                <td>{{ item.MaTX }}</td>
+                <td>{{ item.HoTen }}</td>
+                <td>{{ "{:,}".format(item.Luong) }} VND</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>2. Doanh thu xe theo khoảng thời gian</h2>
+        <form method="get" action="/" class="date-form">
+          <div class="field"><label>Từ ngày</label><input type="date" name="start_date" value="{{ start_date }}"></div>
+          <div class="field"><label>Đến ngày</label><input type="date" name="end_date" value="{{ end_date }}"></div>
+          <button type="submit">Xem doanh thu</button>
+          <a class="link-btn" href="/">Xóa lọc</a>
+        </form>
+        <div class="summary-line">
+          <strong>Tổng doanh thu:</strong> {{ "{:,}".format(total_revenue) }} VND
+        </div>
+        <table>
+          <thead>
+            <tr><th>Mã xe</th><th>Biển số</th><th>Doanh thu</th></tr>
+          </thead>
+          <tbody>
+            {% for item in revenue %}
+              <tr>
+                <td>{{ item.MaXe }}</td>
+                <td>{{ item.BienSo }}</td>
+                <td>{{ "{:,}".format(item.DoanhThu) }} VND</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>3. Ngày bảo dưỡng tiếp theo</h2>
+        <table>
+          <thead>
+            <tr><th>Mã xe</th><th>Biển số</th><th>Bảo dưỡng cuối</th><th>Km làm việc</th><th>Ngày tiếp theo</th><th>Trạng thái</th></tr>
+          </thead>
+          <tbody>
+            {% for item in maintenance %}
+              <tr>
+                <td>{{ item.MaXe }}</td>
+                <td>{{ item.BienSo }}</td>
+                <td>{{ item.NgayBaoDuongCuoi }}</td>
+                <td>{{ item.KmLamViec }}</td>
+                <td>{{ item.NgayBaoDuongTiep }}</td>
+                <td class="status {{ 'danger' if item.TrangThai == 'Quá hạn' else 'ok' }}">{{ item.TrangThai }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Xe quá hạn bảo dưỡng</h2>
+        <table>
+          <thead>
+            <tr><th>Mã xe</th><th>Biển số</th><th>Ngày bảo dưỡng tiếp theo</th></tr>
+          </thead>
+          <tbody>
+            {% for item in overdue %}
+              <tr>
+                <td>{{ item.MaXe }}</td>
+                <td>{{ item.BienSo }}</td>
+                <td>{{ item.NgayBaoDuongTiep }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="3">Không có xe nào quá hạn.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>4. Danh sách chuyến xe</h2>
+        <div class="summary-grid">
+          <div class="mini-stat"><span>Số chuyến</span><strong>{{ trip_summary.count }}</strong></div>
+          <div class="mini-stat"><span>Khách</span><strong>{{ trip_summary.passengers }}</strong></div>
+          <div class="mini-stat"><span>TB khách/chuyến</span><strong>{{ trip_summary.avg_passengers }}</strong></div>
+          <div class="mini-stat"><span>Doanh thu</span><strong>{{ "{:,}".format(trip_summary.revenue) }} VND</strong></div>
+        </div>
+        <form method="get" action="/" class="trip-filter">
+          <div class="field"><label>Tuyến</label>
+            <select name="trip_route">
+              <option value="">Tất cả tuyến</option>
+              {% for item in routes %}
+                <option value="{{ item.MaTuyen }}" {% if item.MaTuyen|string == trip_route %}selected{% endif %}>{{ item.DiemDau }} - {{ item.DiemCuoi }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field"><label>Tài xế</label>
+            <select name="trip_driver">
+              <option value="">Tất cả</option>
+              {% for item in drivers %}
+                <option value="{{ item.MaTX }}" {% if item.MaTX|string == trip_driver %}selected{% endif %}>{{ item.HoTen }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field"><label>Xe</label>
+            <select name="trip_bus">
+              <option value="">Tất cả</option>
+              {% for item in buses %}
+                <option value="{{ item.MaXe }}" {% if item.MaXe|string == trip_bus %}selected{% endif %}>{{ item.BienSo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field"><label>Từ ngày</label><input type="date" name="trip_start" value="{{ trip_start }}"></div>
+          <div class="field"><label>Đến ngày</label><input type="date" name="trip_end" value="{{ trip_end }}"></div>
+          <button type="submit">Lọc chuyến</button>
+          <a class="link-btn" href="/">Xóa lọc</a>
+        </form>
+        <table>
+          <thead>
+            <tr><th>Mã</th><th>Tuyến</th><th>Xe</th><th>Lái xe</th><th>Phụ xe</th><th>Khách</th><th>Giá vé</th><th>Ngày</th></tr>
+          </thead>
+          <tbody>
+            {% for item in trips %}
+              <tr>
+                <td>{{ item.MaChuyen }}</td>
+                <td>{{ item.DiemDau }} - {{ item.DiemCuoi }}</td>
+                <td>{{ item.BienSo }}</td>
+                <td>{{ item.LaiXe }}</td>
+                <td>{{ item.PhuXe }}</td>
+                <td>{{ item.SoKhach }}</td>
+                <td>{{ "{:,}".format(item.GiaVe) }}</td>
+                <td>{{ item.NgayKhoiHanh }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="8">Không có chuyến nào phù hợp với bộ lọc.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>
