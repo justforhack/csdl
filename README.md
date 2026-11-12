@@ -7,7 +7,7 @@
 pip install -r requirements.txt
 ```
 
-## Cấu hình và chạy
+## Cấu hình và chạy MySQL
 
 Đặt thông tin kết nối MySQL trong biến môi trường (ví dụ macOS/Linux):
 
