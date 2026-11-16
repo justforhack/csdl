@@ -1,13 +1,13 @@
 :root {
-  --bg: #f4f7fb;
+  --bg: #f3f6fa;
   --card: #ffffff;
-  --primary: #1f6feb;
-  --primary-dark: #184ea2;
-  --text: #1d2a39;
-  --muted: #5f6b7a;
+  --primary: #2563a8;
+  --primary-dark: #174675;
+  --text: #1e2937;
+  --muted: #667487;
   --danger: #d14343;
   --success: #2c9a62;
-  --border: #dfe5ec;
+  --border: #e1e7ef;
 }
 
 * {
@@ -16,20 +16,29 @@
 
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.5;
 }
 
 .topbar {
-  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  background: linear-gradient(115deg, #286eae, var(--primary-dark));
   color: white;
-  padding: 1rem 2rem;
+  padding: 1.25rem max(1.25rem, calc((100% - 1268px) / 2));
+  box-shadow: 0 3px 12px rgba(23, 70, 117, 0.16);
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  letter-spacing: -0.025em;
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
 }
 
 .container {
@@ -48,15 +57,22 @@ body {
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(28, 48, 74, 0.045);
   padding: 18px;
   margin-bottom: 20px;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.stats .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px rgba(28, 48, 74, 0.09);
 }
 
 .card h2 {
   margin-top: 0;
   font-size: 1.25rem;
+  letter-spacing: -0.015em;
 }
 
 .stat {
@@ -115,7 +131,7 @@ input, select, button {
 }
 
 input:focus, select:focus {
-  outline: 2px solid rgba(31, 111, 235, 0.15);
+  outline: 3px solid rgba(37, 99, 168, 0.14);
   border-color: var(--primary);
 }
 
@@ -125,10 +141,20 @@ button {
   color: white;
   border: none;
   font-weight: 700;
+  transition: background 150ms ease, transform 150ms ease;
 }
 
 button:hover {
   background: var(--primary-dark);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible, .link-btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 168, 0.25);
+  outline-offset: 2px;
 }
 
 .date-form, .trip-filter {
@@ -150,6 +176,12 @@ button:hover {
   color: var(--text);
   text-decoration: none;
   font-weight: 600;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.link-btn:hover {
+  background: #eaf1f9;
+  border-color: #cbd9e8;
 }
 
 .summary-line {
@@ -198,16 +230,25 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
+  font-size: 0.94rem;
 }
 
 th, td {
   border-bottom: 1px solid var(--border);
-  padding: 10px 8px;
+  padding: 11px 10px;
   text-align: left;
 }
 
 th {
   background: #f6f9ff;
+  color: #43566d;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: #f8fafd;
 }
 
 .status.ok {
@@ -235,12 +276,59 @@ th {
   margin-bottom: 12px;
 }
 
+@media (max-width: 900px) {
+  .card:has(table) {
+    overflow-x: auto;
+  }
+}
+
 @media (max-width: 768px) {
+  .topbar {
+    padding: 1rem 16px;
+  }
+
   .two-col {
     grid-template-columns: 1fr;
   }
 
-  .topbar h1 {
-    font-size: 1.5rem;
+  .container {
+    margin-top: 16px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .date-form, .trip-filter {
+    align-items: stretch;
+  }
+
+  .date-form .field, .trip-filter .field {
+    flex: 1 1 150px;
+  }
+
+  .date-form button, .trip-filter button {
+    min-height: 42px;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat {
+    min-height: 96px;
+    padding: 12px;
+  }
+
+  .stat strong {
+    font-size: 1.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
