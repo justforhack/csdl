@@ -41,6 +41,9 @@ class DatabaseConnection:
     def commit(self):
         self.connection.commit()
 
+    def rollback(self):
+        self.connection.rollback()
+
     def close(self):
         self.connection.close()
 
@@ -377,7 +380,48 @@ def get_all_trips(route_id=None, start_date=None, end_date=None, driver_id=None,
 def index():
     if request.method == "POST":
         route = request.form.get("route")
-        if route == "bus":
+        if route == "delete":
+            entity = request.form.get("entity", "")
+            delete_specs = {
+                "bus": ("Xe", "MaXe", "xe", "SELECT COUNT(*) AS count FROM Chuyen WHERE MaXe = %s"),
+                "driver": ("TaiXe", "MaTX", "tài xế", "SELECT COUNT(*) AS count FROM Chuyen WHERE MaLaiXe = %s OR MaPhuXe = %s"),
+                "route": ("Tuyen", "MaTuyen", "tuyến", "SELECT COUNT(*) AS count FROM Chuyen WHERE MaTuyen = %s"),
+                "trip": ("Chuyen", "MaChuyen", "chuyến xe", None),
+            }
+            spec = delete_specs.get(entity)
+            try:
+                record_id = int(request.form.get("record_id", ""))
+                if record_id <= 0:
+                    raise ValueError
+            except ValueError:
+                flash("Mã bản ghi cần xóa không hợp lệ.", "error")
+            else:
+                if spec is None:
+                    flash("Loại dữ liệu cần xóa không hợp lệ.", "error")
+                else:
+                    table, key, label, reference_query = spec
+                    conn = get_db_connection()
+                    try:
+                        references = 0
+                        if reference_query:
+                            params = (record_id, record_id) if entity == "driver" else (record_id,)
+                            references = conn.execute(reference_query, params).fetchone()["count"]
+
+                        if references:
+                            flash(f"Không thể xóa {label} vì đang được sử dụng trong {references} chuyến. Hãy xóa các chuyến liên quan trước.", "error")
+                        else:
+                            cursor = conn.execute(f"DELETE FROM {table} WHERE {key} = %s", (record_id,))
+                            if cursor.rowcount:
+                                conn.commit()
+                                flash(f"Đã xóa {label}.")
+                            else:
+                                flash(f"Không tìm thấy {label} cần xóa.", "error")
+                    except mysql.connector.IntegrityError:
+                        conn.rollback()
+                        flash(f"Không thể xóa {label} vì dữ liệu đang được bản ghi khác sử dụng.", "error")
+                    finally:
+                        conn.close()
+        elif route == "bus":
             bien_so = request.form["bien_so"].strip()
             mau_xe = request.form["mau_xe"].strip()
             hang = request.form["hang_san_xuat"].strip()
@@ -521,7 +565,7 @@ def index():
         total_revenue=total_revenue,
         overdue_count=len(overdue),
         trip_summary=trip_summary,
-        messages=get_flashed_messages(),
+        messages=get_flashed_messages(with_categories=True),
     )
 
 
