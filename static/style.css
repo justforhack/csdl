@@ -51,23 +51,15 @@ body {
   align-items: end;
 }
 
-.eyebrow {
-  display: inline-block;
-  margin-bottom: 6px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
 .topbar h1 {
   margin: 0;
   font-size: clamp(1.5rem, 2vw, 2.1rem);
   letter-spacing: -0.03em;
+}
+
+.topbar p {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .topbar-meta {
@@ -75,6 +67,37 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+}
+
+.section-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(28, 57, 88, 0.04);
+}
+
+.section-nav a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.section-nav a:hover,
+.section-nav a:focus-visible {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.section-nav a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .chip {
@@ -87,11 +110,6 @@ body {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.96);
   font-weight: 600;
-}
-
-.chip-soft {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.8);
 }
 
 .container {
@@ -113,6 +131,31 @@ body {
   color: #16643d;
   border: 1px solid rgba(44, 154, 98, 0.16);
   font-weight: 600;
+}
+
+.flash-message.error {
+  background: var(--danger-soft);
+  color: #9f2525;
+  border-color: rgba(209, 67, 67, 0.2);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.delete-form {
+  display: inline;
+}
+
+.danger-btn {
+  background: var(--danger);
+  box-shadow: none;
+  padding: 8px 12px;
+}
+
+.danger-btn:hover {
+  background: #b83232;
+  box-shadow: none;
 }
 
 .stats {
@@ -397,6 +440,19 @@ tbody tr:hover {
     padding: 1rem 16px;
   }
 
+  .topbar-inner {
+    align-items: flex-start;
+  }
+
+  .section-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .section-nav a {
+    flex: 0 0 auto;
+  }
+
   .two-col {
     grid-template-columns: 1fr;
   }
@@ -432,6 +488,18 @@ tbody tr:hover {
 
   .stat strong {
     font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-inner {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .container {
+    padding-right: 12px;
+    padding-left: 12px;
   }
 }
 
