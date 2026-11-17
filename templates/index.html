@@ -10,26 +10,25 @@
     <header class="topbar">
       <div class="topbar-inner">
         <div>
-          <span class="eyebrow">Dashboard vận tải</span>
           <h1>Hãng vận tải hành khách đường dài</h1>
+          <p>Quản lý xe, tài xế, tuyến đường và hiệu quả vận hành.</p>
         </div>
         <div class="topbar-meta">
           <span class="chip">Đang hoạt động</span>
-          <span class="chip chip-soft">Cập nhật theo thời gian thực</span>
         </div>
       </div>
     </header>
 
     {% if messages %}
       <div class="flash-box">
-        {% for msg in messages %}
-          <div class="flash-message">{{ msg }}</div>
+        {% for category, msg in messages %}
+          <div class="flash-message {{ 'error' if category == 'error' else '' }}">{{ msg }}</div>
         {% endfor %}
       </div>
     {% endif %}
 
     <main class="container">
-      <section class="stats">
+      <section class="stats" id="overview">
         <div class="card stat">
           <span class="label">Xe</span>
           <strong>{{ counts["Xe"] }}</strong>
@@ -45,10 +44,6 @@
         <div class="card stat">
           <span class="label">Chuyến</span>
           <strong>{{ counts["Chuyen"] }}</strong>
-        </div>
-        <div class="card stat">
-          <span class="label">Hệ số</span>
-          <strong>{{ counts["HeSo"] }}</strong>
         </div>
         <div class="card stat accent">
           <span class="label">Doanh thu</span>
@@ -70,7 +65,7 @@
         </ul>
       </section>
 
-      <section class="two-col">
+      <section class="two-col" id="data-entry">
         <div class="card">
           <h2>Thêm xe</h2>
           <form method="post" action="/">
@@ -162,7 +157,95 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="data-management">
+        <h2>Quản lý dữ liệu</h2>
+        <p class="muted">Xe, tài xế hoặc tuyến đang được chuyến xe sử dụng cần xóa các chuyến liên quan trước.</p>
+
+        <h3>Danh sách xe</h3>
+        <table>
+          <thead>
+            <tr><th>Mã xe</th><th>Biển số</th><th>Hãng</th><th>Model</th><th>Số ghế</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody>
+            {% for item in buses %}
+              <tr>
+                <td>{{ item.MaXe }}</td>
+                <td>{{ item.BienSo }}</td>
+                <td>{{ item.HangSanXuat or "" }}</td>
+                <td>{{ item.Model or "" }}</td>
+                <td>{{ item.SoGhe }}</td>
+                <td>
+                  <form method="post" action="/" class="delete-form" onsubmit="return confirm('Bạn chắc chắn muốn xóa xe này?');">
+                    <input type="hidden" name="route" value="delete">
+                    <input type="hidden" name="entity" value="bus">
+                    <input type="hidden" name="record_id" value="{{ item.MaXe }}">
+                    <button type="submit" class="danger-btn">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6">Chưa có xe.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h3>Danh sách tài xế</h3>
+        <table>
+          <thead>
+            <tr><th>Mã tài xế</th><th>Họ tên</th><th>CMT</th><th>Mã bằng lái</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody>
+            {% for item in drivers %}
+              <tr>
+                <td>{{ item.MaTX }}</td>
+                <td>{{ item.HoTen }}</td>
+                <td>{{ item.CMT }}</td>
+                <td>{{ item.MaSoBangLai }}</td>
+                <td>
+                  <form method="post" action="/" class="delete-form" onsubmit="return confirm('Bạn chắc chắn muốn xóa tài xế này?');">
+                    <input type="hidden" name="route" value="delete">
+                    <input type="hidden" name="entity" value="driver">
+                    <input type="hidden" name="record_id" value="{{ item.MaTX }}">
+                    <button type="submit" class="danger-btn">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="5">Chưa có tài xế.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h3>Danh sách tuyến</h3>
+        <table>
+          <thead>
+            <tr><th>Mã tuyến</th><th>Điểm đầu</th><th>Điểm cuối</th><th>Độ dài (km)</th><th>Độ phức tạp</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody>
+            {% for item in routes %}
+              <tr>
+                <td>{{ item.MaTuyen }}</td>
+                <td>{{ item.DiemDau }}</td>
+                <td>{{ item.DiemCuoi }}</td>
+                <td>{{ item.DoDai }}</td>
+                <td>{{ item.DoPhucTap }}</td>
+                <td>
+                  <form method="post" action="/" class="delete-form" onsubmit="return confirm('Bạn chắc chắn muốn xóa tuyến này?');">
+                    <input type="hidden" name="route" value="delete">
+                    <input type="hidden" name="entity" value="route">
+                    <input type="hidden" name="record_id" value="{{ item.MaTuyen }}">
+                    <button type="submit" class="danger-btn">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6">Chưa có tuyến.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" id="reports">
         <h2>1. Lương tháng của tài xế</h2>
         <form method="get" action="/" class="date-form">
           <div class="field"><label>Tháng</label><input type="month" name="payroll_month" value="{{ payroll_month }}"></div>
@@ -252,7 +335,7 @@
         </table>
       </section>
 
-      <section class="card">
+      <section class="card" id="trip-list">
         <h2>4. Danh sách chuyến xe</h2>
         <div class="summary-grid">
           <div class="mini-stat"><span>Số chuyến</span><strong>{{ trip_summary.count }}</strong></div>
@@ -292,7 +375,7 @@
         </form>
         <table>
           <thead>
-            <tr><th>Mã</th><th>Tuyến</th><th>Xe</th><th>Lái xe</th><th>Phụ xe</th><th>Khách</th><th>Giá vé</th><th>Ngày</th></tr>
+            <tr><th>Mã</th><th>Tuyến</th><th>Xe</th><th>Lái xe</th><th>Phụ xe</th><th>Khách</th><th>Giá vé</th><th>Ngày</th><th>Thao tác</th></tr>
           </thead>
           <tbody>
             {% for item in trips %}
@@ -305,9 +388,17 @@
                 <td>{{ item.SoKhach }}</td>
                 <td>{{ "{:,}".format(item.GiaVe) }}</td>
                 <td>{{ item.NgayKhoiHanh }}</td>
+                <td>
+                  <form method="post" action="/" class="delete-form" onsubmit="return confirm('Bạn chắc chắn muốn xóa chuyến xe này?');">
+                    <input type="hidden" name="route" value="delete">
+                    <input type="hidden" name="entity" value="trip">
+                    <input type="hidden" name="record_id" value="{{ item.MaChuyen }}">
+                    <button type="submit" class="danger-btn">Xóa</button>
+                  </form>
+                </td>
               </tr>
             {% else %}
-              <tr><td colspan="8">Không có chuyến nào phù hợp với bộ lọc.</td></tr>
+              <tr><td colspan="9">Không có chuyến nào phù hợp với bộ lọc.</td></tr>
             {% endfor %}
           </tbody>
         </table>
